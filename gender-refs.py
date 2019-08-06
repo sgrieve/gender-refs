@@ -14,7 +14,7 @@ def output_formatter(category, count):
 
 d = gender.Detector(case_sensitive=False)
 
-with open('shape.bib') as bibtex_file:
+with open('references.bib') as bibtex_file:
     refs = bibtexparser.load(bibtex_file)
 
 genders = []
