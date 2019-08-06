@@ -24,7 +24,7 @@ def load_bibtex(filename):
                  'Check for missing brackets around dates or mismatched brackets.')
 
 
-load_bibtex(sys.argv[1])
+refs = load_bibtex(sys.argv[1])
 headers = {'User-Agent': 'GenderCheck/0.1 (https://swdg.io; mailto:{})'.format(load_email())}
 
 d = gender.Detector(case_sensitive=False)
