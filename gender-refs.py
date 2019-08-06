@@ -1,9 +1,9 @@
-import gender_guesser.detector as gender
 import bibtexparser
 import requests
+import urllib.parse as url
+import gender_guesser.detector as gender
 from collections import Counter
 from nameparser import HumanName
-import urllib.parse as url
 
 def load_email():
     with open('EMAIL') as f:
