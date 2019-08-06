@@ -11,7 +11,8 @@ def load_email():
         return url.quote(f.readline().strip())
 
 def output_formatter(category, count):
-    return '{}: {}'.format(category.capitalize().replace('_', ' '), count)
+    header = category.capitalize().replace('_', ' ').replace('Andy', 'Androgynous')
+    return '{}: {}'.format(header, count)
 
 def load_bibtex(filename):
     try:
@@ -67,4 +68,4 @@ for c in counts.items():
     print(output_formatter(*c))
     total_count += c[1]
 
-print('Total references processed: {}\n\n'.format(total_count))
+print('Total authors processed: {}\n\n'.format(total_count))

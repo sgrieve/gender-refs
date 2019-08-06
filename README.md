@@ -42,9 +42,9 @@ Unknown: 19
 Mostly male: 3
 Male: 195
 Female: 29
-Andy: 7
+Androgynous: 7
 Mostly female: 2
-Total references processed: 255
+Total authors processed: 255
 
 ```
 
