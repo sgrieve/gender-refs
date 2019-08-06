@@ -26,7 +26,7 @@ headers = {'User-Agent': 'GenderCheck/0.1 (https://swdg.io; mailto:s@swdg.io)'}
 print('\n\n\tFound {} references.'.format(len(refs.entries)))
 print('\tReferences without a DOI cannot be processed.\n\n')
 
-for ref in refs.entries[1:3]:
+for ref in refs.entries:
     try:
         doi = url.quote(ref['doi'])
         query = 'https://api.crossref.org/works/{}'.format(doi)
