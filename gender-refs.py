@@ -1,10 +1,12 @@
 import bibtexparser
-import requests
 import sys
 import urllib.parse as url
 import gender_guesser.detector as gender
 from collections import Counter
 from nameparser import HumanName
+import aiohttp
+import asyncio
+
 
 def load_email():
     with open('EMAIL') as f:
@@ -24,25 +26,25 @@ def load_bibtex(filename):
         sys.exit('ERROR: Bibtex file appears to be incorrectly formatted.\n'
                  'Check for missing brackets around dates or mismatched brackets.')
 
-
-refs = load_bibtex(sys.argv[1])
-headers = {'User-Agent': 'GenderCheck/0.1 (https://swdg.io; mailto:{})'.format(load_email())}
-
-d = gender.Detector(case_sensitive=False)
-genders = []
-
-print('\n\n\tFound {} references.'.format(len(refs.entries)))
-print('\tReferences without a DOI cannot be processed.\n\n')
-
-for ref in refs.entries:
-    try:
-        doi = url.quote(ref['doi'])
-        query = 'https://api.crossref.org/works/{}'.format(doi)
-        r = requests.get(query, headers=headers)
+def build_queries(refs):
+    queries = []
+    for ref in refs.entries:
         try:
-            for author in r.json()['message']['author']:
-                name = author['given']
-                name = HumanName(name)
+            doi = url.quote(ref['doi'])
+            queries.append('https://api.crossref.org/works/{}'.format(doi))
+        except:
+            pass
+    return queries
+
+def detect_genders(results):
+    d = gender.Detector(case_sensitive=False)
+    genders = []
+
+    try:
+        for record in results:
+            for name in record['message']['author']:
+
+                name = HumanName(name['given'])
 
                 # Check for people with a first initial rather than a first name
                 if name.is_an_initial(name.first):
@@ -53,13 +55,38 @@ for ref in refs.entries:
                     # Seems like a first name we can process
                     genders.append(d.get_gender(name.first))
 
-        except:
-            # No author record - possibly citing an organisation, or invalid DOI
-            pass
-
     except:
-        # Call to Crossref has failed in a bad way
+        # No author record - possibly citing an organisation, or invalid DOI
         pass
+
+    return genders
+
+async def fetch(session, url):
+    async with session.get(url) as response:
+        try:
+            return await response.json()
+        except:
+            # DOI not found by crossref, or another http error.
+            print(response.status, response.text)
+
+async def crossref_call(urls):
+    # headers = {'User-Agent': 'genderrefs/0.1 (https://swdg.io; mailto:{})'.format(load_email())}
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for url in urls[:3]:
+            tasks.append(fetch(session, url))
+        responses = await asyncio.gather(*tasks)
+        return responses
+
+
+refs = load_bibtex(sys.argv[1])
+queries = build_queries(refs)
+loop = asyncio.get_event_loop()
+results = loop.run_until_complete(crossref_call(queries))
+genders = detect_genders(results)
+
+print('\n\n\tFound {} references.'.format(len(refs.entries)))
+print('\tReferences without a DOI cannot be processed.\n\n')
 
 counts = Counter(genders)
 total_count = 0
