@@ -85,7 +85,7 @@ queries = build_queries(refs)
 results = []
 
 # Here we split our parallel requests into chunks of 25, so we don't hit a rate limit
-for i in range(0, len(queries)+1, 25):
+for i in range(0, len(queries) + 1, 25):
     loop = asyncio.get_event_loop()
     results += loop.run_until_complete(crossref_call(queries[i - 25: i]))
     time.sleep(2)
